@@ -134,6 +134,17 @@
       <div class="card">
         <h3>Recording</h3>
         <p class="warning">Please download the recording before clearing browser data.</p>
+
+        <label>Camera Selection</label>
+        <select id="cameraSelect">
+          <option value="user">Front Camera</option>
+          <option value="environment">Back Camera</option>
+        </select>
+
+        <div id="recordingIndicator" class="hidden">
+          🔴 Recording in progress...
+        </div>
+
         <div class="grid">
           <button id="startAudioBtn" class="primary">Start Audio</button>
           <button id="startVideoBtn" class="primary">Start Video</button>

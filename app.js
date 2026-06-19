@@ -200,6 +200,7 @@ function loadEvaluationIntoForm(e) {
   $("nextStep").value = e.notes.nextStep || "";
   $("overallComment").value = e.notes.overallComment || "";
   syncScoreLabels();
+  restoreRecordingForEvaluation(e.evaluationId);
 }
 
 function validateEvaluation(team, scores) {
@@ -234,7 +235,8 @@ function buildEvaluation(team) {
     ? getEvaluations().find((e) => e.evaluationId === state.editingEvaluationId)
     : null;
 
-  const recording = state.currentRecording.blob
+  //const recording = state.currentRecording.blob
+  const recording = (state.currentRecording.blob || state.currentRecording.url)
     ? {
         audioAvailable: true,
         videoAvailable: state.currentRecording.type === "video",
@@ -278,13 +280,26 @@ function buildEvaluation(team) {
 }
 
 async function startRecording(type) {
+  if (state.currentRecording.blob || state.currentRecording.url) {
+    alert("Only one recording allowed per evaluation. Delete existing recording first.");
+    return;
+  }
+
   try {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       alert("Recording is not supported in this browser.");
       return;
     }
 
-    const constraints = type === "audio" ? { audio: true } : { audio: true, video: true };
+    //const constraints = type === "audio" ? { audio: true } : { audio: true, video: true };
+    const constraints = type === "audio"
+    ? { audio: true }
+    : {
+        audio: true,
+        video: {
+          facingMode: $("cameraSelect").value
+        }
+      };
     state.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
     const mimeType = type === "audio"
@@ -330,6 +345,7 @@ async function startRecording(type) {
     $("recordingStatus").textContent = `${type.toUpperCase()} recording started.`;
     $("startAudioBtn").disabled = true;
     $("startVideoBtn").disabled = true;
+    $("recordingIndicator").classList.remove("hidden");
     $("stopAudioBtn").disabled = false;
     $("stopVideoBtn").disabled = false;
   } catch {
@@ -339,10 +355,13 @@ async function startRecording(type) {
 
 function stopRecording() {
   if (state.mediaRecorder && state.mediaRecorder.state !== "inactive") {
-    state.mediaRecorder.stop();
-    state.stream?.getTracks()?.forEach((t) => t.stop());
+    if (state.stream) {
+      state.stream.getTracks().forEach(track => track.stop());
+      state.stream = null;
+    }
     $("startAudioBtn").disabled = false;
     $("startVideoBtn").disabled = false;
+    $("recordingIndicator").classList.add("hidden");
     $("stopAudioBtn").disabled = true;
     $("stopVideoBtn").disabled = true;
     $("downloadRecordingBtn").disabled = false;
@@ -351,6 +370,7 @@ function stopRecording() {
   }
 }
 
+/*
 function showPreview() {
   const el = state.currentRecording.type === "video" ? $("videoPreview") : $("audioPreview");
   el.src = state.currentRecording.url;
@@ -358,17 +378,41 @@ function showPreview() {
   $("downloadRecordingBtn").disabled = false;
   $("deleteRecordingBtn").disabled = false;
   $("recordingStatus").textContent = `${state.currentRecording.type.toUpperCase()} recording ready.`;
+}*/
+function showPreview() {
+  $("audioPreview").classList.add("hidden");
+  $("videoPreview").classList.add("hidden");
+
+  const el = state.currentRecording.type === "video"
+    ? $("videoPreview")
+    : $("audioPreview");
+
+  el.src = state.currentRecording.url;
+  el.classList.remove("hidden");
+
+  $("downloadRecordingBtn").disabled = false;
+  $("deleteRecordingBtn").disabled = false;
+  $("recordingStatus").textContent =
+    `${state.currentRecording.type.toUpperCase()} recording ready.`;
 }
 
 function downloadRecording() {
-  if (!state.currentRecording.blob) return;
+  if (!state.currentRecording.url) return;
+
   const a = document.createElement("a");
   a.href = state.currentRecording.url;
-  a.download = state.currentRecording.fileName;
+  a.download = state.currentRecording.fileName || "recording.webm";
   a.click();
 }
 
+/*
 function deleteRecording() {
+  clearRecording();
+} */
+async function deleteRecording() {
+  if (state.editingEvaluationId) {
+    await deleteRecordingFromIndexedDB(state.editingEvaluationId).catch(() => {});
+  }
   clearRecording();
 }
 
@@ -719,6 +763,26 @@ function clearRecording() {
 }
 
 
+
+async function restoreRecordingForEvaluation(evaluationId) {
+  clearRecording();
+
+  const recording = await loadRecordingFromIndexedDB(evaluationId);
+
+  if (!recording) return;
+
+  state.currentRecording = {
+    type: recording.type,
+    blob: null,
+    url: recording.url,
+    mimeType: "",
+    fileName: recording.fileName
+  };
+
+  showPreview();
+}
+
+
 async function saveEvaluation(goNext) {
   const team = getTeams().find((t) => t.teamId === state.selectedTeamId);
 
@@ -748,6 +812,8 @@ async function saveEvaluation(goNext) {
       state.currentRecording.fileName,
       state.currentRecording.type
     );
+
+    console.log("Recording saved to IndexedDB:", evaluation.evaluationId);
   }
 
   alert("Evaluation saved.");
@@ -808,6 +874,8 @@ function renderSummary() {
 }
 
 function showDetailDialog(evaluationId) {
+  console.log("showDetailDialog called", evaluationId);
+
   state.detailId = evaluationId;
   const evaluation = getEvaluations().find((e) => e.evaluationId === evaluationId);
   if (!evaluation) return;
@@ -832,9 +900,37 @@ function showDetailDialog(evaluationId) {
       Inclusion: ${escapeHtml(evaluation.notes.inclusionQuestion || "-")}<br>
       Next Step: ${escapeHtml(evaluation.notes.nextStep || "-")}<br>
       Comment: ${escapeHtml(evaluation.notes.overallComment || "-")}<br>
+
+      <hr>
+      <div id="detailRecordingSection">
+        <strong>Recording:</strong><br>
+        <div id="detailRecordingPreview">Loading recording...</div>
+      </div>
     </div>
   `;
   $("detailDialog").showModal();
+  console.log("Before loading recording");
+  loadRecordingFromIndexedDB(evaluationId).then((recording) => {
+    console.log("Loaded recording:", recording);
+    const preview = $("detailRecordingPreview");
+
+    if (!recording) {
+      preview.innerHTML = "No recording found.";
+      return;
+    }
+
+    if (recording.type === "audio") {
+      preview.innerHTML = `
+        <audio controls src="${recording.url}" style="width:100%; margin-top:10px;"></audio>
+      `;
+    } else {
+      preview.innerHTML = `
+        <video controls src="${recording.url}" style="width:100%; margin-top:10px; border-radius:12px;"></video>
+      `;
+    }
+  });
+
+
 }
 
 // 2. EDIT FROM DETAIL - Load evaluation back into form
@@ -866,6 +962,7 @@ $("deleteBtn").onclick = () => {
   alert("Evaluation deleted.");
 };
 
+/*
 // 4. MAKE SUMMARY CLICKABLE
 // Update renderSummary to add click handlers:
 function renderSummary() {
@@ -912,5 +1009,5 @@ function renderSummary() {
     });
   });
 }
-
+*/
 init();
