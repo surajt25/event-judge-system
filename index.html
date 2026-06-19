@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fuel to Fly 4.0 Evaluation App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section id="dashboardScreen" class="screen active">
+      <header class="hero">
+        <h1>Fuel to Fly 4.0</h1>
+        <p>Judge Evaluation App</p>
+      </header>
+
+      <div class="card">
+        <label>Event Name</label>
+        <input id="eventName" value="Fuel to Fly 4.0" />
+      </div>
+
+      <div class="card">
+        <label>Judge Name</label>
+        <input id="judgeName" placeholder="Enter judge name" />
+      </div>
+
+      <div class="grid">
+        <button id="startBtn" class="primary">Start Evaluation</button>
+        <button id="summaryBtn">View Summary</button>
+        <button id="exportBtn">Export Data</button>
+        <button id="resetBtn" class="danger">Reset Data</button>
+      </div>
+    </section>
+
+    <section id="roundScreen" class="screen">
+      <h2>Select Round</h2>
+      <div class="grid">
+        <button class="roundBtn primary" data-round="Round 1: Elimination Round">Round 1: Elimination Round</button>
+        <button class="roundBtn primary" data-round="Round 2: Final Round">Round 2: Final Round</button>
+      </div>
+      <button class="backBtn">Back</button>
+    </section>
+
+    <section id="teamScreen" class="screen">
+      <h2>Select / Add Team</h2>
+
+      <div class="card">
+        <label>Search Team</label>
+        <input id="teamSearch" placeholder="Search by team name" />
+      </div>
+
+      <div id="teamList" class="list"></div>
+
+      <div class="card">
+        <h3>Add New Team</h3>
+        <div class="formGrid">
+          <input id="teamName" placeholder="Team Name" />
+          <input id="teamNumber" placeholder="Team Number" />
+          <input id="schoolName" placeholder="School Name" />
+          <select id="theme">
+            <option value="">Select Theme</option>
+            <option value="Sustainability">Sustainability</option>
+            <option value="Safety">Safety</option>
+            <option value="Accessibility">Accessibility</option>
+            <option value="Mental & Emotional Well-being">Mental & Emotional Well-being</option>
+            <option value="Other">Other</option>
+          </select>
+          <input id="productServiceName" placeholder="Product / Service Name" />
+          <input id="ideaDescription" placeholder="Idea Description" />
+          <input id="presentationRoom" placeholder="Presentation Room" />
+        </div>
+        <button id="continueBtn" class="primary">Continue to Scoring</button>
+      </div>
+
+      <button class="backBtn">Back</button>
+    </section>
+
+    <section id="scoreScreen" class="screen">
+      <div class="stickyTop">
+        <h2 id="scoreTitle">Score Team</h2>
+        <div class="scoreBadge">Total: <span id="totalScore">0</span> / 50</div>
+      </div>
+
+      <div class="card">
+        <div id="scoreMeta"></div>
+      </div>
+
+      <!-- SCORING CRITERIA -->
+      <div class="card">
+        <h3>Criteria</h3>
+        
+        <div class="criterion">
+          <label>Originality & Innovation (0-15)</label>
+          <input type="range" id="originalityInnovation" min="0" max="15" value="0" />
+          <span id="originalityInnovationVal">0</span>/15
+        </div>
+
+        <div class="criterion">
+          <label>Feasibility & Practicality (0-5)</label>
+          <input type="range" id="feasibilityPracticality" min="0" max="5" value="0" />
+          <span id="feasibilityPracticalityVal">0</span>/5
+        </div>
+
+        <div class="criterion">
+          <label>Market Potential (0-10)</label>
+          <input type="range" id="marketPotential" min="0" max="10" value="0" />
+          <span id="marketPotentialVal">0</span>/10
+        </div>
+
+        <div class="criterion">
+          <label>Impact, Accessibility & Inclusion (0-15)</label>
+          <input type="range" id="impactAccessibilityInclusion" min="0" max="15" value="0" />
+          <span id="impactAccessibilityInclusionVal">0</span>/15
+        </div>
+
+        <div class="criterion">
+          <label>Presentation Quality (0-5)</label>
+          <input type="range" id="presentationQuality" min="0" max="5" value="0" />
+          <span id="presentationQualityVal">0</span>/5
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="card">
+        <h3>Notes and Observations</h3>
+        <textarea id="strengths" placeholder="Strengths"></textarea>
+        <textarea id="concerns" placeholder="Concerns"></textarea>
+        <textarea id="inclusionQuestion" placeholder="Inclusion Question"></textarea>
+        <textarea id="nextStep" placeholder="Suggested Next Step"></textarea>
+        <textarea id="overallComment" placeholder="Overall Judge Comment"></textarea>
+      </div>
+
+      <!-- RECORDING -->
+      <div class="card">
+        <h3>Recording</h3>
+        <p class="warning">Please download the recording before clearing browser data.</p>
+        <div class="grid">
+          <button id="startAudioBtn" class="primary">Start Audio</button>
+          <button id="startVideoBtn" class="primary">Start Video</button>
+          <button id="stopAudioBtn" disabled>Stop Audio</button>
+          <button id="stopVideoBtn" disabled>Stop Video</button>
+        </div>
+        <div id="recordingStatus" class="status">No recording yet.</div>
+        <audio id="audioPreview" controls class="hidden"></audio>
+        <video id="videoPreview" controls class="hidden"></video>
+        <div class="grid">
+          <button id="downloadRecordingBtn" disabled>Download Recording</button>
+          <button id="deleteRecordingBtn" disabled>Delete Recording</button>
+        </div>
+      </div>
+
+      <!-- SAVE BUTTONS -->
+      <div class="stickyBottom">
+        <button id="saveBtn" class="primary">Save Evaluation</button>
+        <button id="saveNextBtn" class="primary">Save & Next Team</button>
+      </div>
+      <button class="backBtn">Back</button>
+    </section>
+
+    <section id="summaryScreen" class="screen">
+      <h2>Summary Dashboard</h2>
+
+      <div class="card">
+        <div class="grid">
+          <button class="filterBtn primary" data-filter="All">All Rounds</button>
+          <button class="filterBtn" data-filter="Round 1: Elimination Round">Round 1</button>
+          <button class="filterBtn" data-filter="Round 2: Final Round">Round 2</button>
+        </div>
+        <div class="grid">
+          <button id="sortScoreBtn" class="primary">Sort by Score</button>
+          <button id="sortImpactBtn">Sort by Impact</button>
+          <button id="sortMarketBtn">Sort by Market</button>
+        </div>
+      </div>
+
+      <div id="summaryList" class="list"></div>
+
+      <div class="grid">
+        <button id="copyBtn">Copy Summary</button>
+        <button id="printBtn">Print Summary</button>
+        <button id="exportCsvBtn">Export CSV</button>
+        <button id="exportJsonBtn">Export JSON</button>
+        <button class="backBtn">Back</button>
+      </div>
+    </section>
+
+    <!-- DETAIL DIALOG -->
+    <dialog id="detailDialog">
+      <div id="detailContent"></div>
+      <div class="grid">
+        <button id="editBtn" class="primary">Edit Evaluation</button>
+        <button id="deleteBtn" class="danger">Delete Evaluation</button>
+        <button id="closeDetailBtn">Close</button>
+      </div>
+    </dialog>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

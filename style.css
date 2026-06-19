@@ -1,0 +1,144 @@
+:root {
+  --bg: #0f172a;
+  --card: rgba(17, 24, 39, 0.96);
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --primary: #f59e0b;
+  --danger: #ef4444;
+  --line: #223044;
+  --focus: #fbbf24;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(245, 158, 11, 0.14), transparent 32%),
+    linear-gradient(180deg, #08101d, #111827);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 14px;
+}
+.screen { display: none; }
+.screen.active { display: block; }
+.hero, .card, .list, dialog {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+.hero h1, h2, h3 { margin: 0 0 8px; }
+label { display: block; margin-bottom: 6px; color: var(--muted); }
+input, textarea, select, button {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  padding: 13px 14px;
+  background: #0b1220;
+  color: var(--text);
+  font-size: 16px;
+}
+input:focus, textarea:focus, select:focus, button:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+button {
+  min-height: 48px;
+  touch-action: manipulation;
+}
+.primary {
+  background: linear-gradient(180deg, #fbbf24, #f59e0b);
+  color: #111827;
+}
+.danger {
+  background: linear-gradient(180deg, #f87171, #ef4444);
+  color: white;
+}
+.grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+.formGrid {
+  display: grid;
+  gap: 10px;
+}
+.listItem {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  background: #0b1220;
+}
+.stickyTop, .stickyBottom {
+  position: sticky;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+  padding: 10px 0;
+  backdrop-filter: blur(8px);
+}
+.stickyTop {
+  top: 0;
+}
+.stickyBottom {
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.scoreBadge {
+  background: #1f2937;
+  padding: 10px 12px;
+  border-radius: 14px;
+  display: inline-block;
+  font-weight: 700;
+}
+.criterion {
+  margin-bottom: 16px;
+}
+.criterion input[type="range"] {
+  padding: 0;
+  height: 44px;
+  accent-color: var(--primary);
+}
+.meta, .status, .warning {
+  color: var(--muted);
+  line-height: 1.45;
+}
+.warning {
+  color: #fbbf24;
+}
+.hidden {
+  display: none;
+}
+dialog {
+  width: min(94vw, 640px);
+  color: var(--text);
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+@media (max-width: 520px) {
+  .app {
+    padding: 10px;
+  }
+
+  .grid,
+  .stickyBottom {
+    grid-template-columns: 1fr;
+  }
+
+  .hero, .card, .list, dialog {
+    border-radius: 16px;
+    padding: 14px;
+  }
+}
